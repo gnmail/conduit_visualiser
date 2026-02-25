@@ -19,7 +19,7 @@
         label { display: block; margin: 10px 0 5px; font-weight: 700; font-size: 0.8rem; }
         select, input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-        .btn { padding: 10px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn { padding: 8px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
         .btn-add { background: var(--primary); color: white; }
         .btn-fill { background: #0f172a; color: white; }
         .btn-pdf { background: #059669; color: white; width: 100%; margin-top: 10px; font-size: 1rem; }
@@ -27,14 +27,12 @@
         .stats-panel { border-top: 2px solid var(--border); margin-top: 20px; padding-top: 15px; }
         .stat-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
         .fill-bar-bg { height: 24px; background: #e2e8f0; border-radius: 12px; overflow: hidden; position: relative; margin: 10px 0; border: 1px solid #94a3b8; }
-        .fill-bar-inner { height: 100%; width: 0%; transition: 0.4s ease-out; }
+        .fill-bar-inner { height: 100%; width: 0%; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .limit-line { position: absolute; top: 0; bottom: 0; width: 3px; background: #000; z-index: 5; }
-        .inventory { margin-top: 15px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; background: white; }
-        .inv-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
+        .inventory { margin-top: 15px; max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; background: white; }
+        .inv-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
         .btn-remove { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
         .canvas-area { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; position: sticky; top: 20px; height: fit-content; }
-        .conduit-label { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; padding: 8px; background: #f8fafc; border-radius: 6px; border: 1px dashed var(--border); }
-        .dimension-label { font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 500; }
         .warning-msg { color: var(--danger); background: #fef2f2; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-top: 10px; display: none; font-weight: bold; border: 1px solid #fee2e2; }
     </style>
 </head>
@@ -45,59 +43,61 @@
     <div class="container">
         <div class="controls">
             <div class="category-group" style="background: #fff;">
-                <label>Select Orange HD Conduit Size</label>
-                <select id="conSize" onchange="updateConduitSize()">
-                    <option value="20" data-type="OD">20mm (OD)</option>
-                    <option value="25" data-type="OD">25mm (OD)</option>
-                    <option value="32" data-type="OD">32mm (OD)</option>
-                    <option value="40" data-type="OD">40mm (OD)</option>
-                    <option value="50" data-type="OD">50mm (OD)</option>
-                    <option value="63" data-type="OD" selected>63mm (OD)</option>
-                    <option value="80" data-type="ID">80mm (ID)</option>
-                    <option value="100" data-type="ID">100mm (ID)</option>
-                    <option value="125" data-type="ID">125mm (ID)</option>
-                    <option value="150" data-type="ID">150mm (ID)</option>
-                </select>
+                <label>Conduit Size</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="conSize" value="63">
+                    <button class="btn btn-add" style="width:100px" onclick="updateConduitSize()">Set</button>
+                </div>
             </div>
 
             <div class="category-group">
                 <h3>Power</h3>
                 <select id="pwrSel">
-                    <optgroup label="TriCab Al XL (Flexible)">
-                        <option value="6.8">1.5mm² Al XL (6.8mm OD)</option>
-                        <option value="7.6">2.5mm² Al XL (7.6mm OD)</option>
-                        <option value="8.9">4.0mm² Al XL (8.9mm OD)</option>
-                        <option value="10.2">6.0mm² Al XL (10.2mm OD)</option>
-                        <option value="12.1">10mm² Al XL (12.1mm OD)</option>
-                        <option value="20.8">16mm² Al XL (20.8mm OD)</option>
-                        <option value="23.2">25mm² Al XL (23.2mm OD)</option>
-                        <option value="26.1">35mm² Al XL (26.1mm OD)</option>
-                        <option value="28.9">50mm² Al XL (28.9mm OD)</option>
-                        <option value="33.5">70mm² Al XL (33.5mm OD)</option>
-                        <option value="37.8">95mm² Al XL (37.8mm OD)</option>
+                    <optgroup label="TriCab Aluminium XL Flexible (2C+E)">
+                        <option value="10.8">1.5mm² Al XL Rubber (10.8mm OD)</option>
+                        <option value="11.6">2.5mm² Al XL Rubber (11.6mm OD)</option>
+                        <option value="13.1">4.0mm² Al XL Rubber (13.1mm OD)</option>
+                        <option value="14.2">6.0mm² Al XL Rubber (14.2mm OD)</option>
+                        <option value="18.8">10.0mm² Al XL Rubber (18.8mm OD)</option>
+                        <option value="20.8">16.0mm² Al XL Rubber (20.8mm OD)</option>
+                        <option value="23.2">25.0mm² Al XL Rubber (23.2mm OD)</option>
+                        <option value="26.1">35.0mm² Al XL Rubber (26.1mm OD)</option>
+                        <option value="28.9">50.0mm² Al XL Rubber (28.9mm OD)</option>
                     </optgroup>
-                    <optgroup label="Flat TPS (2C + E)">
+                    <optgroup label="Copper SDI">
+                        <option value="5.0">1.5mm² SDI (5.0mm OD)</option>
+                        <option value="5.4">2.5mm² SDI (5.4mm OD)</option>
+                        <option value="6.7">6.0mm² SDI (6.7mm OD)</option>
+                        <option value="8.0">10mm² SDI (8.0mm OD)</option>
+                        <option value="8.9">16mm² SDI (8.9mm OD)</option>
+                        <option value="10.8">25mm² SDI (10.8mm OD)</option>
+                        <option value="12.0">35mm² SDI (12.0mm OD)</option>
+                        <option value="13.7">50mm² SDI (13.7mm OD)</option>
+                        <option value="15.8">70mm² SDI (15.8mm OD)</option>
+                        <option value="17.9">95mm² SDI (17.9mm OD)</option>
+                    </optgroup>
+                    <optgroup label="Copper Flat TPS (2C + E)">
                         <option value="9.9">1.5mm² Flat (9.9mm OD)</option>
                         <option value="11.2">2.5mm² Flat (11.2mm OD)</option>
                         <option value="14.5">6.0mm² Flat (14.5mm OD)</option>
-                        <option value="22.3">16mm² Flat (22.3mm OD)</option>
-                        <option value="26.8">25mm² Flat (26.8mm OD)</option>
-                        <option value="36.0">50mm² Flat (36.0mm OD)</option>
-                        <option value="48.5">95mm² Flat (48.5mm OD)</option>
+                        <option value="18.3">10.0mm² Flat (18.3mm OD)</option>
+                        <option value="21.3">16.0mm² Flat (21.3mm OD)</option>
                     </optgroup>
-                    <optgroup label="Orange Circular (2C + E)">
-                        <option value="10.5">1.5mm² OC (10.5mm OD)</option>
+                    <optgroup label="Copper Orange Circular (2C + E)">
                         <option value="11.6">2.5mm² OC (11.6mm OD)</option>
                         <option value="14.8">6.0mm² OC (14.8mm OD)</option>
-                        <option value="21.3">16mm² OC (21.3mm OD)</option>
-                        <option value="25.2">25mm² OC (25.2mm OD)</option>
-                        <option value="32.5">50mm² OC (32.5mm OD)</option>
-                        <option value="42.8">95mm² OC (42.8mm OD)</option>
+                        <option value="17.5">10.0mm² OC (17.5mm OD)</option>
+                        <option value="19.2">16.0mm² OC (19.2mm OD)</option>
+                        <option value="23.3">25.0mm² OC (23.3mm OD)</option>
+                        <option value="26.4">35.0mm² OC (26.4mm OD)</option>
+                        <option value="29.9">50.0mm² OC (29.9mm OD)</option>
+                        <option value="34.3">70.0mm² OC (34.3mm OD)</option>
+                        <option value="39.5">95.0mm² OC (39.5mm OD)</option>
                     </optgroup>
                 </select>
                 <div class="btn-grid">
-                    <button class="btn btn-add" onclick="handleAdd('pwrSel', 'Power')">Add One</button>
-                    <button class="btn btn-fill" onclick="handleBulk('pwrSel', 'Power')">Fill to Max</button>
+                    <button class="btn btn-add" onclick="handleAdd('pwrSel', 'power')">Add One</button>
+                    <button class="btn btn-fill" onclick="handleBulk('pwrSel', 'power')">Fill to Max</button>
                 </div>
             </div>
 
@@ -108,7 +108,7 @@
                         <option value="5.5">2-Core MILSPEC (5.5mm OD)</option>
                         <option value="6.5">4-Core MILSPEC (6.5mm OD)</option>
                     </optgroup>
-                    <optgroup label="Loose Tube Fibre">
+                    <optgroup label="Single Mode">
                         <option value="9.5">12-Core SM (9.5mm OD)</option>
                         <option value="12.5">24-Core SM (12.5mm OD)</option>
                         <option value="15.5">48-Core SM (15.5mm OD)</option>
@@ -118,16 +118,18 @@
                     </optgroup>
                 </select>
                 <div class="btn-grid">
-                    <button class="btn btn-add" style="background:#0284c7" onclick="handleAdd('fbrSel', 'Fibre')">Add One</button>
-                    <button class="btn btn-fill" onclick="handleBulk('fbrSel', 'Fibre')">Fill to Max</button>
+                    <button class="btn btn-add" style="background:#0284c7" onclick="handleAdd('fbrSel', 'fibre')">Add One</button>
+                    <button class="btn btn-fill" onclick="handleBulk('fbrSel', 'fibre')">Fill to Max</button>
                 </div>
             </div>
 
             <div class="category-group">
                 <h3>Traffic Signals</h3>
                 <select id="trfSel">
-                    <optgroup label="Traffic Signals">
+                    <optgroup label="Loop Feeder">
                         <option value="8.1">Loop Feeder (8.1mm OD)</option>
+                    </optgroup>
+                    <optgroup label="Traffic Signals Multicore">
                         <option value="11.5">6-Core Traffic (11.5mm OD)</option>
                         <option value="19.2">19-Core Traffic (19.2mm OD)</option>
                         <option value="24.5">29-Core Traffic (24.5mm OD)</option>
@@ -136,187 +138,216 @@
                     </optgroup>
                 </select>
                 <div class="btn-grid">
-                    <button class="btn btn-add" style="background:#ea580c" onclick="handleAdd('trfSel', 'Traffic Signals')">Add One</button>
-                    <button class="btn btn-fill" onclick="handleBulk('trfSel', 'Traffic Signals')">Fill to Max</button>
+                    <button class="btn btn-add" style="background:#ea580c" onclick="handleAdd('trfSel', 'traffic')">Add One</button>
+                    <button class="btn btn-fill" onclick="handleBulk('trfSel', 'traffic')">Fill to Max</button>
                 </div>
             </div>
 
             <div class="stats-panel">
                 <div class="stat-row">
+                    <span>Cable Count: <span id="cableCount">0</span></span>
                     <span>Fill: <span id="fillPct">0%</span></span>
-                    <span>Allowed (AS3000): <span id="allowedPct">50%</span></span>
+                </div>
+                <div class="stat-row" style="color:#64748b; font-size:0.8rem;">
+                    <span>Current Max Allowed:</span>
+                    <span><span id="maxAllowed">50%</span></span>
                 </div>
                 <div class="fill-bar-bg">
                     <div id="barLimit" class="limit-line" style="left: 50%;"></div>
                     <div id="barInner" class="fill-bar-inner"></div>
                 </div>
                 <div id="warn" class="warning-msg"></div>
+                <label>Inventory & OD Log</label>
                 <div class="inventory" id="invList"></div>
                 <button class="btn btn-reset" onclick="reset()">Reset All Data</button>
             </div>
         </div>
 
         <div class="canvas-area">
-            <div class="conduit-label" id="currentConduitDisplay">63mm Conduit</div>
-            <div class="dimension-label" id="dimDisplay">Outer: 63mm | Inner: 56.6mm</div>
-            
             <canvas id="c" width="500" height="500"></canvas>
-            
-            <div style="margin: 20px 0; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                <label style="margin-top: 0;">Project Name</label>
-                <input type="text" id="projName" placeholder="Enter project identifier...">
+            <div style="margin-top:15px; font-size:0.85rem; display:flex; gap:20px; justify-content:center; font-weight:600;">
+                <span><span style="color:#ef4444">■</span> Power</span>
+                <span><span style="color:#0284c7">■</span> Fibre</span>
+                <span><span style="color:#ea580c">■</span> Traffic</span>
+            </div>
+            <div style="margin-top:20px; text-align:left;">
+                <label>Project Identifier</label>
+                <input type="text" id="projId" placeholder="e.g. Site A - Conduit 01">
                 <button class="btn btn-pdf" onclick="exportToPDF()">Export to PDF</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentOD = 63, internalRadius = (63 - 6.4) / 2;
+        let conduitD = 63;
         let cables = [];
         const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-        const colors = { 'Power': '#ef4444', 'Fibre': '#0284c7', 'Traffic Signals': '#ea580c' };
+        const colors = { power: '#ef4444', fibre: '#0284c7', traffic: '#ea580c' };
 
         function handleAdd(id, type) {
             const sel = document.getElementById(id);
-            const opt = sel.options[sel.selectedIndex];
-            const group = opt.parentElement.label;
-            const d = parseFloat(sel.value), label = opt.text;
-            if (addCableLogic(d, type, label, group)) update();
+            const d = parseFloat(sel.value), label = sel.options[sel.selectedIndex].text;
+            const sub = sel.options[sel.selectedIndex].parentNode.label || 'Standard';
+            if (addCableLogic(d, type, label, sub)) update();
         }
 
         function handleBulk(id, type) {
             const sel = document.getElementById(id);
-            const opt = sel.options[sel.selectedIndex];
-            const group = opt.parentElement.label;
-            const d = parseFloat(sel.value), label = opt.text;
+            const d = parseFloat(sel.value), label = sel.options[sel.selectedIndex].text;
+            const sub = sel.options[sel.selectedIndex].parentNode.label || 'Standard';
+            let addedCount = 0;
             while (true) {
                 const tempArea = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0) + (Math.PI * (d/2)**2);
-                const limit = (cables.length + 1) >= 2 ? (cables.length + 1 === 2 ? 33 : 40) : 50;
-                if ((tempArea / (Math.PI * internalRadius**2)) * 100 > limit) break;
-                if (!addCableLogic(d, type, label, group)) break;
+                const totalArea = Math.PI * (conduitD/2)**2;
+                const nextFill = (tempArea / totalArea) * 100;
+                const limit = cables.length >= 2 ? 40 : (cables.length === 1 ? 33 : 50);
+                if (nextFill > limit) break;
+                if (!addCableLogic(d, type, label, sub)) break;
+                addedCount++;
+                if (addedCount > 300) break; 
             }
             update();
         }
 
-        function addCableLogic(d, type, label, group) {
-            const r = d / 2;
-            const pos = findPos(r);
+        function addCableLogic(d, type, label, sub) {
+            if (d > conduitD) { alert("Cable diameter exceeds conduit size!"); return false; }
+            const pos = findPos(d/2);
             if (pos) {
-                cables.push({ id: Math.random(), x: pos.x, y: pos.y, r, d, type, label, group });
+                cables.push({ id: Math.random(), x: pos.x, y: pos.y, r: d/2, d, type, label, sub });
                 return true;
             }
             document.getElementById('warn').style.display = 'block';
-            document.getElementById('warn').textContent = "Physical Capacity Exhausted.";
+            document.getElementById('warn').textContent = "Physical space exhausted!";
             return false;
         }
 
+        function removeCable(id) { cables = cables.filter(c => c.id !== id); repack(); update(); }
+
+        function repack() {
+            const old = [...cables]; cables = [];
+            old.sort((a,b) => b.r - a.r); 
+            old.forEach(c => { const p = findPos(c.r); if(p) { c.x = p.x; c.y = p.y; cables.push(c); }});
+        }
+
         function findPos(r) {
-            for (let y = internalRadius - r; y > -internalRadius + r; y -= 0.5) {
-                for (let x = -internalRadius + r; x < internalRadius - r; x += 0.5) {
-                    if (Math.sqrt(x*x + y*y) + r <= internalRadius && !cables.some(c => Math.sqrt((x-c.x)**2 + (y-c.y)**2) < (r + c.r) - 0.05)) return {x, y};
-                }
+            if (isValid(0, 0, r)) return {x:0, y:0};
+            let angle = 0, d = 0.5, step = 0.4;
+            while (d <= (conduitD/2 - r)) {
+                const tx = d * Math.cos(angle), ty = d * Math.sin(angle);
+                if (isValid(tx, ty, r)) return {x: tx, y: ty};
+                const aStep = (step / d) * 1.5;
+                angle += aStep; d += (step * aStep) / (2 * Math.PI);
             }
             return null;
         }
 
+        function isValid(x, y, r) {
+            if (Math.sqrt(x*x + y*y) + r > conduitD/2) return false;
+            return !cables.some(c => Math.sqrt((x-c.x)**2 + (y-c.y)**2) < (r + c.r) - 0.05);
+        }
+
         function update() {
-            const area = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0);
-            const pct = (area / (Math.PI * internalRadius**2)) * 100;
-            const limit = cables.length <= 1 ? 50 : (cables.length === 2 ? 33 : 40);
+            const count = cables.length;
+            const cArea = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0);
+            const totalArea = Math.PI * (conduitD/2)**2;
+            const pct = (cArea / totalArea) * 100;
+            const limit = count === 0 ? 50 : (count === 1 ? 50 : (count === 2 ? 33 : 40));
             
-            document.getElementById('currentConduitDisplay').textContent = currentOD.toFixed(0) + 'mm Conduit';
-            document.getElementById('dimDisplay').textContent = `Outer: ${currentOD.toFixed(1)}mm | Inner: ${(internalRadius * 2).toFixed(1)}mm`;
+            document.getElementById('cableCount').textContent = count;
             document.getElementById('fillPct').textContent = pct.toFixed(1) + '%';
-            document.getElementById('allowedPct').textContent = limit + '%';
+            document.getElementById('maxAllowed').textContent = limit + '%';
             document.getElementById('barLimit').style.left = limit + '%';
-            document.getElementById('barInner').style.width = Math.min(pct, 100) + '%';
-            document.getElementById('barInner').style.background = pct > limit ? 'var(--danger)' : 'var(--success)';
+            const bar = document.getElementById('barInner');
+            bar.style.width = Math.min(pct, 100) + '%';
+            bar.style.background = pct > limit ? 'var(--danger)' : 'var(--success)';
             
+            const warn = document.getElementById('warn');
+            warn.style.display = pct > limit ? 'block' : 'none';
+            if(pct > limit) warn.textContent = `AS/NZS 3000 VIOLATION: ${pct.toFixed(1)}% exceeds ${limit}% limit.`;
+
             document.getElementById('invList').innerHTML = cables.map(c => `
-                <div class="inv-item"><span>${c.label}</span><button class="btn-remove" onclick="removeCable(${c.id})">✕</button></div>
+                <div class="inv-item">
+                    <span>${c.label}</span>
+                    <button class="btn-remove" onclick="removeCable(${c.id})">✕</button>
+                </div>
             `).reverse().join('');
             draw();
         }
 
-        function removeCable(id) { 
-            cables = cables.filter(c => c.id !== id); 
-            const old = [...cables]; cables = []; 
-            old.sort((a,b) => b.r - a.r).forEach(c => { const p = findPos(c.r); if(p) { c.x = p.x; c.y = p.y; cables.push(c); }});
-            update(); 
-        }
-
         function draw() {
             ctx.clearRect(0,0,500,500);
-            const scale = 440 / currentOD;
-            ctx.beginPath(); ctx.arc(250, 250, (currentOD/2)*scale, 0, 7);
-            ctx.fillStyle = '#94a3b8'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(250, 250, internalRadius*scale, 0, 7);
+            const scale = 440 / conduitD;
+            ctx.beginPath();
+            ctx.arc(250, 250, (conduitD/2)*scale, 0, 7);
             ctx.fillStyle = '#e2e8f0'; ctx.fill();
-            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 5; ctx.stroke();
             cables.forEach(c => {
-                ctx.beginPath(); ctx.arc(250 + c.x*scale, 250 + c.y*scale, c.r*scale, 0, 7);
+                ctx.beginPath();
+                ctx.arc(250 + c.x*scale, 250 + c.y*scale, c.r*scale, 0, 7);
                 ctx.fillStyle = colors[c.type]; ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; ctx.stroke();
             });
         }
 
-        function updateConduitSize() {
-            const sel = document.getElementById('conSize');
-            const val = parseFloat(sel.value);
-            if (sel.options[sel.selectedIndex].dataset.type === 'ID') {
-                internalRadius = val / 2; currentOD = val + 6.4;
-            } else {
-                currentOD = val; internalRadius = (val - 6.4) / 2;
-            }
-            cables = []; update();
-        }
+        function updateConduitSize() { conduitD = parseFloat(document.getElementById('conSize').value) || 63; repack(); update(); }
+        function reset() { cables = []; update(); }
 
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const proj = document.getElementById('projName').value || "Unnamed Project";
+            const date = new Date().toLocaleDateString();
+            const proj = document.getElementById('projId').value || "Unnamed Project";
+            
+            const count = cables.length;
             const area = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0);
-            const pct = (area / (Math.PI * internalRadius**2)) * 100;
-            const limit = cables.length <= 1 ? 50 : (cables.length === 2 ? 33 : 40);
+            const totalArea = Math.PI * (conduitD/2)**2;
+            const pct = (area / totalArea) * 100;
+            const limit = count === 0 ? 50 : (count === 1 ? 50 : (count === 2 ? 33 : 40));
+            const isCompliant = pct <= limit;
+
+            doc.setFontSize(20); doc.text("Conduit Fill Report", 20, 20);
+            doc.setFontSize(10); doc.text(`Project: ${proj}`, 20, 30);
+            doc.text(`Date: ${date}`, 20, 35);
+            doc.text(`Conduit Size: ${conduitD}mm`, 20, 40);
             
-            doc.setFontSize(22); doc.text("Conduit Fill Report", 20, 20);
-            doc.setFontSize(11); doc.text(`Project: ${proj}`, 20, 30);
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 36);
-            doc.text(`Conduit: ${currentOD}mm (Internal: ${internalRadius*2}mm)`, 20, 42);
-            
-            // Compliance Info
             doc.setFont(undefined, 'bold');
-            doc.text(`Fill Level: ${pct.toFixed(1)}%`, 20, 50);
-            doc.text(`AS/NZS 3000 Limit: ${limit}%`, 20, 56);
-            doc.setTextColor(pct > limit ? 220 : 0, pct > limit ? 38 : 120, 38);
-            doc.text(pct > limit ? "STATUS: OVER CAPACITY" : "STATUS: COMPLIANT", 20, 62);
+            doc.text(`Total Fill: ${pct.toFixed(1)}%`, 20, 50);
+            doc.text(`AS/NZS 3000 Limit: ${limit}%`, 20, 55);
+            doc.setTextColor(isCompliant ? 22 : 220, isCompliant ? 163 : 38, isCompliant ? 74 : 38);
+            doc.text(`Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}`, 20, 60);
             doc.setTextColor(0, 0, 0); doc.setFont(undefined, 'normal');
 
             const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 55, 65, 95, 95);
+            doc.addImage(imgData, 'PNG', 110, 25, 80, 80);
+            
+            const body = [];
+            const subGroups = {};
 
-            let tableData = [];
-            const uniqueGroups = [...new Set(cables.map(c => c.group))];
-            uniqueGroups.forEach(groupName => {
-                const groupCables = cables.filter(c => c.group === groupName);
-                tableData.push([{ content: groupName.toUpperCase(), styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }]);
-                const counts = {};
-                groupCables.forEach(c => { counts[c.label] = (counts[c.label] || 0) + 1; });
-                Object.keys(counts).forEach(label => tableData.push([`${counts[label]} x ${label}`]));
+            cables.forEach(c => {
+                const sub = c.sub || 'General';
+                if (!subGroups[sub]) subGroups[sub] = {};
+                if (!subGroups[sub][c.label]) subGroups[sub][c.label] = { count: 0, od: c.d };
+                subGroups[sub][c.label].count++;
+            });
+
+            Object.keys(subGroups).forEach(subName => {
+                body.push([{ content: subName, colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold' } }]);
+                Object.keys(subGroups[subName]).forEach(label => {
+                    const info = subGroups[subName][label];
+                    body.push([`${info.count} x ${label}`, info.od + 'mm']);
+                });
             });
 
             doc.autoTable({
-                startY: 165,
-                head: [['Cable Schedule']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235] }
+                startY: 105,
+                head: [['Cable Description', 'OD']],
+                body: body,
+                theme: 'striped'
             });
-
-            doc.save(`${proj.replace(/\s+/g, '_')}_Report.pdf`);
+            
+            doc.save(`Report_${proj.replace(/\s+/g, '_')}.pdf`);
         }
 
-        function reset() { cables = []; update(); }
         update();
     </script>
 </body>

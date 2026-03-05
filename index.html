@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AS/NZS 3000 Conduit Visualiser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary: #2563eb; --danger: #dc2626; --success: #16a34a;
@@ -43,18 +43,26 @@
     <div class="container">
         <div class="controls">
             <div class="category-group" style="background: #fff;">
-                <label>Conduit Size</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="number" id="conSize" value="63">
-                    <button class="btn btn-add" style="width:100px" onclick="updateConduitSize()">Set</button>
-                </div>
+                <label>Standard Conduit Type (Orange HD)</label>
+                <select id="conType" onchange="updateFromDropdown()">
+                    <option value="20,16.4">20mm (20mm OD, 16.4mm ID)</option>
+                    <option value="25,21.0">25mm (25mm OD, 21.0mm ID)</option>
+                    <option value="32,27.8">32mm (32mm OD, 27.8mm ID)</option>
+                    <option value="40,35.0">40mm (40mm OD, 35.0mm ID)</option>
+                    <option value="50,44.2">50mm (50mm OD, 44.2mm ID)</option>
+                    <option value="63,56.0" selected>63mm (63mm OD, 56.0mm ID)</option>
+                    <option value="88.9,80.0">80mm (88.9mm OD, 80.0mm ID)</option>
+                    <option value="114.3,100.0">100mm (114.3mm OD, 100.0mm ID)</option>
+                    <option value="140.2,125.0">125mm (140.2mm OD, 125.0mm ID)</option>
+                    <option value="160.0,150.0">150mm (160.0mm OD, 150.0mm ID)</option>
+                </select>
             </div>
 
             <div class="category-group">
                 <h3>Power</h3>
                 <select id="pwrSel">
                     <optgroup label="TriCab Aluminium XL Flexible (2C+E)">
-                        <option value="10.8">1.5mm² Al XL Rubber (10.8mm OD)</option>
+                        <option value="10.8" selected="selected">1.5mm² Al XL Rubber (10.8mm OD)</option>
                         <option value="11.6">2.5mm² Al XL Rubber (11.6mm OD)</option>
                         <option value="13.1">4.0mm² Al XL Rubber (13.1mm OD)</option>
                         <option value="14.2">6.0mm² Al XL Rubber (14.2mm OD)</option>
@@ -105,7 +113,7 @@
                 <h3>Fibre</h3>
                 <select id="fbrSel">
                     <optgroup label="MILSPEC">
-                        <option value="5.5">2-Core MILSPEC (5.5mm OD)</option>
+                        <option value="5.5" selected="selected">2-Core MILSPEC (5.5mm OD)</option>
                         <option value="6.5">4-Core MILSPEC (6.5mm OD)</option>
                     </optgroup>
                     <optgroup label="Single Mode">
@@ -131,7 +139,7 @@
                     </optgroup>
                     <optgroup label="Traffic Signals Multicore">
                         <option value="11.5">6-Core Traffic (11.5mm OD)</option>
-                        <option value="19.2">19-Core Traffic (19.2mm OD)</option>
+                        <option value="19.2" selected="selected">19-Core Traffic (19.2mm OD)</option>
                         <option value="24.5">29-Core Traffic (24.5mm OD)</option>
                         <option value="27.8">36-Core Traffic (27.8mm OD)</option>
                         <option value="32.0">51-Core Traffic (32.0mm OD)</option>
@@ -146,18 +154,18 @@
             <div class="stats-panel">
                 <div class="stat-row">
                     <span>Cable Count: <span id="cableCount">0</span></span>
-                    <span>Fill: <span id="fillPct">0%</span></span>
+                    <span>Fill: <span id="fillPct">0.0%</span></span>
                 </div>
                 <div class="stat-row" style="color:#64748b; font-size:0.8rem;">
                     <span>Current Max Allowed:</span>
-                    <span><span id="maxAllowed">50%</span></span>
+                    <span><span id="maxAllowed">40%</span></span>
                 </div>
                 <div class="fill-bar-bg">
-                    <div id="barLimit" class="limit-line" style="left: 50%;"></div>
+                    <div id="barLimit" class="limit-line" style="left: 40%;"></div>
                     <div id="barInner" class="fill-bar-inner"></div>
                 </div>
                 <div id="warn" class="warning-msg"></div>
-                <label>Inventory & OD Log</label>
+                <label>Inventory &amp; OD Log</label>
                 <div class="inventory" id="invList"></div>
                 <button class="btn btn-reset" onclick="reset()">Reset All Data</button>
             </div>
@@ -165,6 +173,7 @@
 
         <div class="canvas-area">
             <canvas id="c" width="500" height="500"></canvas>
+            <div id="conduitLabel" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: #000000;">63mm (63mm OD, 56.0mm ID)</div>
             <div style="margin-top:15px; font-size:0.85rem; display:flex; gap:20px; justify-content:center; font-weight:600;">
                 <span><span style="color:#ef4444">■</span> Power</span>
                 <span><span style="color:#0284c7">■</span> Fibre</span>
@@ -179,10 +188,20 @@
     </div>
 
     <script>
-        let conduitD = 63;
+        let conduitD = 56.0;
+        let outerD = 63.0;
         let cables = [];
         const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
         const colors = { power: '#ef4444', fibre: '#0284c7', traffic: '#ea580c' };
+
+        function updateFromDropdown() {
+            const sel = document.getElementById('conType');
+            const val = sel.value.split(',');
+            outerD = parseFloat(val[0]);
+            conduitD = parseFloat(val[1]);
+            repack();
+            update();
+        }
 
         function handleAdd(id, type) {
             const sel = document.getElementById(id);
@@ -210,7 +229,7 @@
         }
 
         function addCableLogic(d, type, label, sub) {
-            if (d > conduitD) { alert("Cable diameter exceeds conduit size!"); return false; }
+            if (d > conduitD) { alert("Cable diameter exceeds conduit ID!"); return false; }
             const pos = findPos(d/2);
             if (pos) {
                 cables.push({ id: Math.random(), x: pos.x, y: pos.y, r: d/2, d, type, label, sub });
@@ -230,20 +249,25 @@
         }
 
         function findPos(r) {
-            if (isValid(0, 0, r)) return {x:0, y:0};
-            let angle = 0, d = 0.5, step = 0.4;
-            while (d <= (conduitD/2 - r)) {
-                const tx = d * Math.cos(angle), ty = d * Math.sin(angle);
-                if (isValid(tx, ty, r)) return {x: tx, y: ty};
-                const aStep = (step / d) * 1.5;
-                angle += aStep; d += (step * aStep) / (2 * Math.PI);
+            let maxRadius = (conduitD / 2) - r;
+            let currentRadius = maxRadius;
+            let step = 0.3;
+            while (currentRadius >= 0) {
+                let angle = 0;
+                while (angle < 2 * Math.PI) {
+                    const tx = currentRadius * Math.cos(angle);
+                    const ty = currentRadius * Math.sin(angle);
+                    if (isValid(tx, ty, r)) return { x: tx, y: ty };
+                    angle += (step / (currentRadius + 0.1)) * 1.5;
+                }
+                currentRadius -= step;
             }
             return null;
         }
 
         function isValid(x, y, r) {
-            if (Math.sqrt(x*x + y*y) + r > conduitD/2) return false;
-            return !cables.some(c => Math.sqrt((x-c.x)**2 + (y-c.y)**2) < (r + c.r) - 0.05);
+            if (Math.sqrt(x*x + y*y) + r > (conduitD / 2)) return false;
+            return !cables.some(c => Math.sqrt((x-c.x)**2 + (y-c.y)**2) < (r + c.r));
         }
 
         function update() {
@@ -265,6 +289,9 @@
             warn.style.display = pct > limit ? 'block' : 'none';
             if(pct > limit) warn.textContent = `AS/NZS 3000 VIOLATION: ${pct.toFixed(1)}% exceeds ${limit}% limit.`;
 
+            const sel = document.getElementById('conType');
+            document.getElementById('conduitLabel').textContent = sel.options[sel.selectedIndex].text;
+
             document.getElementById('invList').innerHTML = cables.map(c => `
                 <div class="inv-item">
                     <span>${c.label}</span>
@@ -276,20 +303,24 @@
 
         function draw() {
             ctx.clearRect(0,0,500,500);
-            const scale = 440 / conduitD;
+            const scale = 440 / outerD;
+            ctx.beginPath();
+            ctx.arc(250, 250, (outerD/2)*scale, 0, 7);
+            ctx.fillStyle = '#cbd5e1'; ctx.fill();
             ctx.beginPath();
             ctx.arc(250, 250, (conduitD/2)*scale, 0, 7);
             ctx.fillStyle = '#e2e8f0'; ctx.fill();
-            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 5; ctx.stroke();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
             cables.forEach(c => {
                 ctx.beginPath();
                 ctx.arc(250 + c.x*scale, 250 + c.y*scale, c.r*scale, 0, 7);
                 ctx.fillStyle = colors[c.type]; ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
             });
         }
 
-        function updateConduitSize() { conduitD = parseFloat(document.getElementById('conSize').value) || 63; repack(); update(); }
         function reset() { cables = []; update(); }
 
         function exportToPDF() {
@@ -308,7 +339,7 @@
             doc.setFontSize(20); doc.text("Conduit Fill Report", 20, 20);
             doc.setFontSize(10); doc.text(`Project: ${proj}`, 20, 30);
             doc.text(`Date: ${date}`, 20, 35);
-            doc.text(`Conduit Size: ${conduitD}mm`, 20, 40);
+            doc.text(`Conduit: ${document.getElementById('conType').options[document.getElementById('conType').selectedIndex].text}`, 20, 40);
             
             doc.setFont(undefined, 'bold');
             doc.text(`Total Fill: ${pct.toFixed(1)}%`, 20, 50);
@@ -342,13 +373,13 @@
                 startY: 105,
                 head: [['Cable Description', 'OD']],
                 body: body,
-                theme: 'striped'
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] }
             });
             
             doc.save(`Report_${proj.replace(/\s+/g, '_')}.pdf`);
         }
 
-        update();
+        updateFromDropdown();
     </script>
-</body>
-</html>
+</body></html>

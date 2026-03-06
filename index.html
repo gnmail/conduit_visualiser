@@ -173,7 +173,7 @@
 
         <div class="canvas-area">
             <canvas id="c" width="500" height="500"></canvas>
-            <div id="conduitLabel" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: #000000;">63mm (63mm OD, 56.0mm ID)</div>
+            <div id="conduitLabel" style="margin-top: 10px; font-weight: bold; font-size: 1.1rem; color: #000000;">63mm</div>
             <div style="margin-top:15px; font-size:0.85rem; display:flex; gap:20px; justify-content:center; font-weight:600;">
                 <span><span style="color:#ef4444">■</span> Power</span>
                 <span><span style="color:#0284c7">■</span> Fibre</span>
@@ -290,7 +290,10 @@
             if(pct > limit) warn.textContent = `AS/NZS 3000 VIOLATION: ${pct.toFixed(1)}% exceeds ${limit}% limit.`;
 
             const sel = document.getElementById('conType');
-            document.getElementById('conduitLabel').textContent = sel.options[sel.selectedIndex].text;
+            // Get the text from the option (e.g., "63mm (63mm OD, 56.0mm ID)") and split to get only the part before " ("
+            const optionText = sel.options[sel.selectedIndex].text;
+            const sizeOnly = optionText.split(' (')[0];
+            document.getElementById('conduitLabel').textContent = sizeOnly;
 
             document.getElementById('invList').innerHTML = cables.map(c => `
                 <div class="inv-item">

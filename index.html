@@ -62,7 +62,7 @@
                 <h3>Power</h3>
                 <select id="pwrSel">
                     <optgroup label="TriCab Aluminium XL Flexible (2C+E)">
-                        <option value="10.8" selected="selected">1.5mm² Al XL Rubber (10.8mm OD)</option>
+                        <option value="10.8">1.5mm² Al XL Rubber (10.8mm OD)</option>
                         <option value="11.6">2.5mm² Al XL Rubber (11.6mm OD)</option>
                         <option value="13.1">4.0mm² Al XL Rubber (13.1mm OD)</option>
                         <option value="14.2">6.0mm² Al XL Rubber (14.2mm OD)</option>
@@ -85,11 +85,15 @@
                         <option value="17.9">95mm² SDI (17.9mm OD)</option>
                     </optgroup>
                     <optgroup label="Copper Flat TPS (2C + E)">
-                        <option value="9.9">1.5mm² Flat (9.9mm OD)</option>
-                        <option value="11.2">2.5mm² Flat (11.2mm OD)</option>
-                        <option value="14.5">6.0mm² Flat (14.5mm OD)</option>
-                        <option value="18.3">10.0mm² Flat (18.3mm OD)</option>
-                        <option value="21.3">16.0mm² Flat (21.3mm OD)</option>
+                        <option value="9.9,4.5">1.5mm² Flat (9.9mm x 4.5mm)</option>
+                        <option value="11.2,5.1">2.5mm² Flat (11.2mm x 5.1mm)</option>
+                        <option value="12.7,5.8">4.0mm² Flat (12.7mm x 5.8mm)</option>
+                        <option value="14.5,6.5">6.0mm² Flat (14.5mm x 6.5mm)</option>
+                        <option value="18.3,8.2">10.0mm² Flat (18.3mm x 8.2mm)</option>
+                        <option value="21.3,9.5">16.0mm² Flat (21.3mm x 9.5mm)</option>
+                        <option value="25.5,11.5">25.0mm² Flat (25.5mm x 11.5mm)</option>
+                        <option value="29.0,13.0">35.0mm² Flat (29.0mm x 13.0mm)</option>
+                        <option value="33.0,14.5">50.0mm² Flat (33.0mm x 14.5mm)</option>
                     </optgroup>
                     <optgroup label="Copper Orange Circular (2C + E)">
                         <option value="11.6">2.5mm² OC (11.6mm OD)</option>
@@ -113,7 +117,7 @@
                 <h3>Fibre</h3>
                 <select id="fbrSel">
                     <optgroup label="MILSPEC">
-                        <option value="5.5" selected="selected">2-Core MILSPEC (5.5mm OD)</option>
+                        <option value="5.5">2-Core MILSPEC (5.5mm OD)</option>
                         <option value="6.5">4-Core MILSPEC (6.5mm OD)</option>
                     </optgroup>
                     <optgroup label="Single Mode">
@@ -139,7 +143,7 @@
                     </optgroup>
                     <optgroup label="Traffic Signals Multicore">
                         <option value="11.5">6-Core Traffic (11.5mm OD)</option>
-                        <option value="19.2" selected="selected">19-Core Traffic (19.2mm OD)</option>
+                        <option value="19.2">19-Core Traffic (19.2mm OD)</option>
                         <option value="24.5">29-Core Traffic (24.5mm OD)</option>
                         <option value="27.8">36-Core Traffic (27.8mm OD)</option>
                         <option value="32.0">51-Core Traffic (32.0mm OD)</option>
@@ -205,34 +209,65 @@
 
         function handleAdd(id, type) {
             const sel = document.getElementById(id);
-            const d = parseFloat(sel.value), label = sel.options[sel.selectedIndex].text;
+            const val = sel.value.split(',');
+            const label = sel.options[sel.selectedIndex].text;
             const sub = sel.options[sel.selectedIndex].parentNode.label || 'Standard';
-            if (addCableLogic(d, type, label, sub)) update();
+            
+            let cableObj = { id: Math.random(), type, label, sub, angle: 0 };
+            if (sub === "Copper Flat TPS (2C + E)") {
+                cableObj.isFlat = true;
+                cableObj.w = parseFloat(val[0]);
+                cableObj.h = parseFloat(val[1]);
+                cableObj.area = cableObj.w * cableObj.h;
+            } else {
+                cableObj.isFlat = false;
+                cableObj.d = parseFloat(val[0]);
+                cableObj.r = cableObj.d / 2;
+                cableObj.area = Math.PI * (cableObj.r**2);
+            }
+
+            if (addCableLogic(cableObj)) update();
         }
 
         function handleBulk(id, type) {
             const sel = document.getElementById(id);
-            const d = parseFloat(sel.value), label = sel.options[sel.selectedIndex].text;
+            const val = sel.value.split(',');
+            const label = sel.options[sel.selectedIndex].text;
             const sub = sel.options[sel.selectedIndex].parentNode.label || 'Standard';
+            
             let addedCount = 0;
             while (true) {
-                const tempArea = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0) + (Math.PI * (d/2)**2);
-                const totalArea = Math.PI * (conduitD/2)**2;
-                const nextFill = (tempArea / totalArea) * 100;
-                const limit = cables.length >= 2 ? 40 : (cables.length === 1 ? 33 : 50);
+                let cableObj = { id: Math.random(), type, label, sub, angle: 0 };
+                if (sub === "Copper Flat TPS (2C + E)") {
+                    cableObj.isFlat = true;
+                    cableObj.w = parseFloat(val[0]);
+                    cableObj.h = parseFloat(val[1]);
+                    cableObj.area = cableObj.w * cableObj.h;
+                } else {
+                    cableObj.isFlat = false;
+                    cableObj.d = parseFloat(val[0]);
+                    cableObj.r = cableObj.d / 2;
+                    cableObj.area = Math.PI * (cableObj.r**2);
+                }
+
+                const currentAreaSum = cables.reduce((acc, c) => acc + c.area, 0);
+                const totalInternalArea = Math.PI * (conduitD/2)**2;
+                const nextFill = ((currentAreaSum + cableObj.area) / totalInternalArea) * 100;
+                
+                const limit = (cables.length + 1) >= 3 ? 40 : ((cables.length + 1) === 2 ? 33 : 50);
                 if (nextFill > limit) break;
-                if (!addCableLogic(d, type, label, sub)) break;
+                if (!addCableLogic(cableObj)) break;
                 addedCount++;
-                if (addedCount > 300) break; 
+                if (addedCount > 400) break; 
             }
             update();
         }
 
-        function addCableLogic(d, type, label, sub) {
-            if (d > conduitD) { alert("Cable diameter exceeds conduit ID!"); return false; }
-            const pos = findPos(d/2);
-            if (pos) {
-                cables.push({ id: Math.random(), x: pos.x, y: pos.y, r: d/2, d, type, label, sub });
+        function addCableLogic(obj) {
+            const res = findBestPos(obj);
+            if (res) {
+                obj.x = res.x; obj.y = res.y; obj.angle = res.angle;
+                cables.push(obj);
                 return true;
             }
             document.getElementById('warn').style.display = 'block';
@@ -244,37 +279,114 @@
 
         function repack() {
             const old = [...cables]; cables = [];
-            old.sort((a,b) => b.r - a.r); 
-            old.forEach(c => { const p = findPos(c.r); if(p) { c.x = p.x; c.y = p.y; cables.push(c); }});
+            old.sort((a,b) => (b.area || b.r**2) - (a.area || a.r**2)); 
+            old.forEach(c => { 
+                const res = findBestPos(c); 
+                if(res) { 
+                    c.x = res.x; c.y = res.y; c.angle = res.angle; 
+                    cables.push(c); 
+                }
+            });
         }
 
-        function findPos(r) {
-            let maxRadius = (conduitD / 2) - r;
-            let currentRadius = maxRadius;
-            let step = 0.3;
-            while (currentRadius >= 0) {
-                let angle = 0;
-                while (angle < 2 * Math.PI) {
-                    const tx = currentRadius * Math.cos(angle);
-                    const ty = currentRadius * Math.sin(angle);
-                    if (isValid(tx, ty, r)) return { x: tx, y: ty };
-                    angle += (step / (currentRadius + 0.1)) * 1.5;
+        function findBestPos(obj) {
+            const conduitR = conduitD / 2;
+            const step = 0.5;
+            // Generate 12 rotation angles (every 15 degrees)
+            const anglesToTry = obj.isFlat ? Array.from({length: 12}, (_, i) => i * Math.PI / 12) : [0];
+
+            for (let r = conduitR; r >= 0; r -= step) {
+                for (let theta = 0; theta < Math.PI * 2; theta += (step / (r + 0.1))) {
+                    const tx = r * Math.cos(theta);
+                    const ty = r * Math.sin(theta);
+                    
+                    for (let angle of anglesToTry) {
+                        if (checkCollision(tx, ty, angle, obj)) {
+                            return { x: tx, y: ty, angle: angle };
+                        }
+                    }
                 }
-                currentRadius -= step;
             }
             return null;
         }
 
-        function isValid(x, y, r) {
-            if (Math.sqrt(x*x + y*y) + r > (conduitD / 2)) return false;
-            return !cables.some(c => Math.sqrt((x-c.x)**2 + (y-c.y)**2) < (r + c.r));
+        function getRectCorners(x, y, w, h, angle) {
+            const cos = Math.cos(angle), sin = Math.sin(angle);
+            return [ [-w/2, -h/2], [w/2, -h/2], [w/2, h/2], [-w/2, h/2] ].map(p => ({
+                x: x + p[0]*cos - p[1]*sin,
+                y: y + p[0]*sin + p[1]*cos
+            }));
+        }
+
+        function rectRectOverlap(x1, y1, a1, w1, h1, x2, y2, a2, w2, h2) {
+            const c1 = getRectCorners(x1, y1, w1, h1, a1);
+            const c2 = getRectCorners(x2, y2, w2, h2, a2);
+            const axes = [
+                {x: c1[1].x - c1[0].x, y: c1[1].y - c1[0].y},
+                {x: c1[2].x - c1[1].x, y: c1[2].y - c1[1].y},
+                {x: c2[1].x - c2[0].x, y: c2[1].y - c2[0].y},
+                {x: c2[2].x - c2[1].x, y: c2[2].y - c2[1].y}
+            ];
+            for (let axis of axes) {
+                const len = Math.hypot(axis.x, axis.y);
+                if (len === 0) continue;
+                const nx = -axis.y / len, ny = axis.x / len;
+                let min1 = Infinity, max1 = -Infinity, min2 = Infinity, max2 = -Infinity;
+                for(let p of c1) { const dot = p.x*nx + p.y*ny; min1 = Math.min(min1, dot); max1 = Math.max(max1, dot); }
+                for(let p of c2) { const dot = p.x*nx + p.y*ny; min2 = Math.min(min2, dot); max2 = Math.max(max2, dot); }
+                if (max1 < min2 - 0.2 || max2 < min1 - 0.2) return false;
+            }
+            return true;
+        }
+
+        function rectCircleOverlap(rx, ry, ra, rw, rh, cx, cy, cr) {
+            const dx = cx - rx;
+            const dy = cy - ry;
+            const localCX = dx * Math.cos(-ra) - dy * Math.sin(-ra);
+            const localCY = dx * Math.sin(-ra) + dy * Math.cos(-ra);
+            
+            let closestX = Math.max(-rw/2, Math.min(localCX, rw/2));
+            let closestY = Math.max(-rh/2, Math.min(localCY, rh/2));
+            return Math.hypot(localCX - closestX, localCY - closestY) < cr + 0.2;
+        }
+
+        function checkCollision(x, y, angle, obj) {
+            const conduitR = conduitD / 2;
+            const margin = 0.1;
+
+            if (obj.isFlat) {
+                const cos = Math.cos(angle), sin = Math.sin(angle);
+                const corners = [[-obj.w/2, -obj.h/2], [obj.w/2, -obj.h/2], [obj.w/2, obj.h/2], [-obj.w/2, obj.h/2]];
+                for (let p of corners) {
+                    const rx = p[0] * cos - p[1] * sin;
+                    const ry = p[0] * sin + p[1] * cos;
+                    if (Math.hypot(x + rx, y + ry) > conduitR - margin) return false;
+                }
+            } else {
+                if (Math.hypot(x, y) + obj.r > conduitR - margin) return false;
+            }
+
+            for (let c of cables) {
+                if (obj.isFlat && c.isFlat) {
+                    if (rectRectOverlap(x, y, angle, obj.w, obj.h, c.x, c.y, c.angle, c.w, c.h)) return false;
+                } else if (obj.isFlat || c.isFlat) {
+                    if (obj.isFlat) {
+                        if (rectCircleOverlap(x, y, angle, obj.w, obj.h, c.x, c.y, c.r)) return false;
+                    } else {
+                        if (rectCircleOverlap(c.x, c.y, c.angle, c.w, c.h, x, y, obj.r)) return false;
+                    }
+                } else {
+                    if (Math.hypot(x - c.x, y - c.y) < (obj.r + c.r) + margin) return false;
+                }
+            }
+            return true;
         }
 
         function update() {
             const count = cables.length;
-            const cArea = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0);
-            const totalArea = Math.PI * (conduitD/2)**2;
-            const pct = (cArea / totalArea) * 100;
+            const cAreaSum = cables.reduce((acc, c) => acc + c.area, 0);
+            const totalInternalArea = Math.PI * (conduitD/2)**2;
+            const pct = (cAreaSum / totalInternalArea) * 100;
             const limit = count === 0 ? 50 : (count === 1 ? 50 : (count === 2 ? 33 : 40));
             
             document.getElementById('cableCount').textContent = count;
@@ -290,9 +402,7 @@
             if(pct > limit) warn.textContent = `AS/NZS 3000 VIOLATION: ${pct.toFixed(1)}% exceeds ${limit}% limit.`;
 
             const sel = document.getElementById('conType');
-            // Get the text from the option (e.g., "63mm (63mm OD, 56.0mm ID)") and split to get only the part before " ("
-            const optionText = sel.options[sel.selectedIndex].text;
-            const sizeOnly = optionText.split(' (')[0];
+            const sizeOnly = sel.options[sel.selectedIndex].text.split(' (')[0];
             document.getElementById('conduitLabel').textContent = sizeOnly;
 
             document.getElementById('invList').innerHTML = cables.map(c => `
@@ -313,14 +423,27 @@
             ctx.beginPath();
             ctx.arc(250, 250, (conduitD/2)*scale, 0, 7);
             ctx.fillStyle = '#e2e8f0'; ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#000000';
-            ctx.stroke();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#000000'; ctx.stroke();
+
             cables.forEach(c => {
-                ctx.beginPath();
-                ctx.arc(250 + c.x*scale, 250 + c.y*scale, c.r*scale, 0, 7);
-                ctx.fillStyle = colors[c.type]; ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.save();
+                ctx.translate(250 + c.x * scale, 250 + c.y * scale);
+                ctx.rotate(c.angle);
+                ctx.fillStyle = colors[c.type];
+                
+                if (c.isFlat) {
+                    ctx.beginPath();
+                    const w = c.w * scale, h = c.h * scale, r = 2;
+                    ctx.roundRect(-w/2, -h/2, w, h, r);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, c.r*scale, 0, 7);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+                }
+                ctx.restore();
             });
         }
 
@@ -329,57 +452,37 @@
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const date = new Date().toLocaleDateString();
             const proj = document.getElementById('projId').value || "Unnamed Project";
-            
-            const count = cables.length;
-            const area = cables.reduce((acc, c) => acc + Math.PI * c.r**2, 0);
-            const totalArea = Math.PI * (conduitD/2)**2;
-            const pct = (area / totalArea) * 100;
-            const limit = count === 0 ? 50 : (count === 1 ? 50 : (count === 2 ? 33 : 40));
+            const count = cables.length, areaSum = cables.reduce((acc, c) => acc + c.area, 0);
+            const totalInternalArea = Math.PI * (conduitD/2)**2;
+            const pct = (areaSum / totalInternalArea) * 100;
+            const limit = count <= 1 ? 50 : (count === 2 ? 33 : 40);
             const isCompliant = pct <= limit;
 
             doc.setFontSize(20); doc.text("Conduit Fill Report", 20, 20);
-            doc.setFontSize(10); doc.text(`Project: ${proj}`, 20, 30);
-            doc.text(`Date: ${date}`, 20, 35);
-            doc.text(`Conduit: ${document.getElementById('conType').options[document.getElementById('conType').selectedIndex].text}`, 20, 40);
-            
+            doc.setFontSize(10); 
+            doc.text(`Project: ${proj}`, 20, 30);
+            doc.text(`Conduit: ${document.getElementById('conType').options[document.getElementById('conType').selectedIndex].text}`, 20, 35);
             doc.setFont(undefined, 'bold');
-            doc.text(`Total Fill: ${pct.toFixed(1)}%`, 20, 50);
-            doc.text(`AS/NZS 3000 Limit: ${limit}%`, 20, 55);
-            doc.setTextColor(isCompliant ? 22 : 220, isCompliant ? 163 : 38, isCompliant ? 74 : 38);
-            doc.text(`Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}`, 20, 60);
-            doc.setTextColor(0, 0, 0); doc.setFont(undefined, 'normal');
-
-            const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 110, 25, 80, 80);
+            doc.text(`Total Fill: ${pct.toFixed(1)}% / Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}`, 20, 45);
+            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 110, 25, 80, 80);
             
             const body = [];
             const subGroups = {};
-
             cables.forEach(c => {
                 const sub = c.sub || 'General';
                 if (!subGroups[sub]) subGroups[sub] = {};
-                if (!subGroups[sub][c.label]) subGroups[sub][c.label] = { count: 0, od: c.d };
+                if (!subGroups[sub][c.label]) subGroups[sub][c.label] = { count: 0, dim: c.isFlat ? `${c.w}x${c.h}mm` : `${c.d}mm` };
                 subGroups[sub][c.label].count++;
             });
-
             Object.keys(subGroups).forEach(subName => {
                 body.push([{ content: subName, colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold' } }]);
                 Object.keys(subGroups[subName]).forEach(label => {
-                    const info = subGroups[subName][label];
-                    body.push([`${info.count} x ${label}`, info.od + 'mm']);
+                    body.push([`${subGroups[subName][label].count} x ${label}`, subGroups[subName][label].dim]);
                 });
             });
 
-            doc.autoTable({
-                startY: 105,
-                head: [['Cable Description', 'OD']],
-                body: body,
-                theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235] }
-            });
-            
+            doc.autoTable({ startY: 105, head: [['Cable Description', 'Dimensions']], body: body, theme: 'striped', headStyles: { fillColor: [37, 99, 235] } });
             doc.save(`Report_${proj.replace(/\s+/g, '_')}.pdf`);
         }
 
